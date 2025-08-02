@@ -1,0 +1,36 @@
+<!-- templates/setup.html -->
+{% extends "base.html" %}
+
+{% block title %}Setup - Kite Login App{% endblock %}
+{% block header %}API Credentials Setup{% endblock %}
+
+{% block content %}
+<form method="POST">
+    <div class="form-group">
+        <label for="api_key">API Key:</label>
+        <input type="text" id="api_key" name="api_key" required 
+               placeholder="Enter your Kite Connect API Key">
+    </div>
+    
+    <div class="form-group">
+        <label for="api_secret">API Secret:</label>
+        <input type="password" id="api_secret" name="api_secret" required 
+               placeholder="Enter your Kite Connect API Secret">
+    </div>
+    
+    <div style="text-align: center;">
+        <button type="submit" class="btn btn-success">Save Credentials</button>
+        <a href="{{ url_for('index') }}" class="btn">Cancel</a>
+    </div>
+</form>
+
+<div style="margin-top: 30px;">
+    <h3>Important Notes:</h3>
+    <ul>
+        <li>Your credentials are stored locally in a SQLite database</li>
+        <li>Make sure to set the redirect URL in your Kite Connect app to: <code>http://127.0.0.1:8000/zerodha/callback/</code></li>
+        <li>You can get your API credentials from <a href="https://kite.trade/connect/login" target="_blank">Kite Connect</a></li>
+    </ul>
+</div>
+{% endblock %}
+

@@ -1,0 +1,42 @@
+<!-- templates/index.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="status-info">
+    <h3>Application Status</h3>
+    {% if has_credentials %}
+        <p>✅ API credentials are configured</p>
+        <p>📍 Redirect URL: <code>http://127.0.0.1:8000/zerodha/callback/</code></p>
+        <p>Ready to login to Kite!</p>
+    {% else %}
+        <p>❌ API credentials not configured</p>
+        <p>Please setup your API credentials first.</p>
+    {% endif %}
+</div>
+
+{% if has_credentials %}
+    <div style="text-align: center;">
+        <h3>Login to Kite</h3>
+        <p>Click the button below to login to your Zerodha Kite account:</p>
+        <a href="{{ url_for('login') }}" class="btn btn-success">Login to Kite</a>
+    </div>
+{% else %}
+    <div style="text-align: center;">
+        <h3>Setup Required</h3>
+        <p>You need to configure your API credentials before logging in.</p>
+        <a href="{{ url_for('setup') }}" class="btn">Setup API Credentials</a>
+    </div>
+{% endif %}
+
+<div style="margin-top: 40px;">
+    <h3>Instructions</h3>
+    <ol>
+        <li>Get your API Key and Secret from <a href="https://kite.trade/connect/login" target="_blank">Kite Connect</a></li>
+        <li>Set up your API credentials using the Setup page</li>
+        <li>Click "Login to Kite" to authenticate</li>
+        <li>You'll be redirected to Zerodha login page</li>
+        <li>After successful login, you'll be redirected back to the home page</li>
+    </ol>
+</div>
+{% endblock %}
+
