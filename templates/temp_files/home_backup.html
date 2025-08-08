@@ -1,0 +1,69 @@
+<!-- templates/home.html -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Kite Login App{% endblock %}
+{% block header %}Kite Dashboard{% endblock %}
+
+{% block content %}
+<div class="status-info">
+    <h3>✅ Successfully Connected to Kite!</h3>
+    <p><strong>Access Token:</strong> <code>{{ access_token[:20] }}...</code></p>
+    <p>You are now authenticated and can use the Kite Connect API.</p>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <button onclick="loadProfile()" class="btn">Load Profile</button>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+</div>
+
+<div id="profile-section" style="display: none;">
+    <h3>User Profile</h3>
+    <div id="profile-data"></div>
+</div>
+
+<script>
+function loadProfile() {
+    fetch('/profile')
+        .then(response => response.json())
+        .then(data => {
+            const profileSection = document.getElementById('profile-section');
+            const profileData = document.getElementById('profile-data');
+            
+            if (data.error) {
+                profileData.innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
+            } else {
+                profileData.innerHTML = `
+                    <div class="status-info">
+                        <p><strong>User ID:</strong> ${data.user_id}</p>
+                        <p><strong>User Name:</strong> ${data.user_name}</p>
+                        <p><strong>Email:</strong> ${data.email}</p>
+                        <p><strong>Broker:</strong> ${data.broker}</p>
+                        <p><strong>User Type:</strong> ${data.user_type}</p>
+                        ${data.exchanges ? `<p><strong>Exchanges:</strong> ${data.exchanges.join(', ')}</p>` : ''}
+                    </div>
+                `;
+            }
+            
+            profileSection.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('profile-data').innerHTML = 
+                `<div class="alert alert-error">Error loading profile: ${error.message}</div>`;
+            document.getElementById('profile-section').style.display = 'block';
+        });
+}
+</script>
+
+<div style="margin-top: 40px;">
+    <h3>Next Steps</h3>
+    <p>Now that you're authenticated, you can:</p>
+    <ul>
+        <li>Use the access token to make API calls to Kite Connect</li>
+        <li>Fetch market data, place orders, get portfolio information, etc.</li>
+        <li>Extend this application with more features as needed</li>
+    </ul>
+    
+    <p><strong>Note:</strong> The access token is valid until market close. You'll need to re-authenticate daily.</p>
+</div>
+{% endblock %}

@@ -1,9 +1,9 @@
 import logging
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, g
 from database import init_db, get_credentials, save_credentials, update_access_token
 from kiteconnect import KiteConnect
-from kite_wrapper import Kite_Api
+from core import Kite_Api
 import os
 
 # Configure logging
@@ -13,11 +13,34 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # Change this to a secure secret key
 
 
+def get_kite_api():
+    """Get or create Kite API instance for current request"""
+    if 'kite_api' not in g:
+        credentials = get_credentials()
+        access_token = session.get('access_token')
+        
+        if not credentials or not access_token:
+            return None
+        
+        api_key, _, _ = credentials
+        g.kite_api = Kite_Api(api_key=api_key, access_token=access_token)
+    
+    return g.kite_api
+
+
+def require_auth():
+    """Check if user is authenticated and return kite_api instance"""
+    kite_api = get_kite_api()
+    if not kite_api:
+        return None, jsonify({'error': 'Not authenticated'}), 401
+    return kite_api, None, None
+
+
 @app.route('/')
 def index():
     """Main page with setup and login options"""
     credentials = get_credentials()
-    return render_template('index.html', has_credentials=credentials is not None)
+    return render_template('index.html', has_credentials = credentials is not None)
 
 @app.route('/setup', methods=['GET', 'POST'])
 def setup():
@@ -109,16 +132,11 @@ def home():
 @app.route('/profile')
 def profile():
     """Get user profile from Kite API"""
-    credentials = get_credentials()
-    access_token = session.get('access_token')
-    
-    if not credentials or not access_token:
-        return jsonify({'error': 'Not authenticated'}), 401
+    kite_api, error_response, status_code = require_auth()
+    if error_response:
+        return error_response, status_code
     
     try:
-        api_key, _, _ = credentials
-        kite_api = Kite_Api(api_key=api_key, access_token=access_token)
-        
         profile_data = kite_api.get_profile()
         return jsonify(profile_data)
     
@@ -135,16 +153,11 @@ def logout():
 @app.route('/holdings')
 def holdings():
     """Get holdings from Kite API"""
-    credentials = get_credentials()
-    access_token = session.get('access_token')
-    
-    if not credentials or not access_token:
-        return jsonify({'error': 'Not authenticated'}), 401
+    kite_api, error_response, status_code = require_auth()
+    if error_response:
+        return error_response, status_code
     
     try:
-        api_key, _, _ = credentials
-        kite_api = Kite_Api(api_key=api_key, access_token=access_token)
-        
         holdings_data = kite_api.get_holdings()
         return jsonify(holdings_data)
     
@@ -154,16 +167,11 @@ def holdings():
 @app.route('/positions')
 def positions():
     """Get positions from Kite API"""
-    credentials = get_credentials()
-    access_token = session.get('access_token')
-    
-    if not credentials or not access_token:
-        return jsonify({'error': 'Not authenticated'}), 401
+    kite_api, error_response, status_code = require_auth()
+    if error_response:
+        return error_response, status_code
     
     try:
-        api_key, _, _ = credentials
-        kite_api = Kite_Api(api_key=api_key, access_token=access_token)
-        
         positions_data = kite_api.get_positions()
         return jsonify(positions_data)
     
@@ -173,16 +181,11 @@ def positions():
 @app.route('/margins')
 def margins():
     """Get margins from Kite API"""
-    credentials = get_credentials()
-    access_token = session.get('access_token')
-    
-    if not credentials or not access_token:
-        return jsonify({'error': 'Not authenticated'}), 401
+    kite_api, error_response, status_code = require_auth()
+    if error_response:
+        return error_response, status_code
     
     try:
-        api_key, _, _ = credentials
-        kite_api = Kite_Api(api_key=api_key, access_token=access_token)
-        
         margins_data = kite_api.get_margins()
         return jsonify(margins_data)
     
