@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kite Connect Trading Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 50%, #2d1b69 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #4f46e5, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(79, 70, 229, 0.8), transparent);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(79, 70, 229, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .portfolio-grid {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .portfolio-item {
+            background: rgba(51, 65, 85, 0.6);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .portfolio-item:hover {
+            background: rgba(51, 65, 85, 0.8);
+            transform: scale(1.02);
+        }
+
+        .symbol {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .change {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .positive {
+            color: #10b981;
+        }
+
+        .negative {
+            color: #ef4444;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #cbd5e1;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(51, 65, 85, 0.5);
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4f46e5, #06b6d4);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        .order-book {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(51, 65, 85, 0.4);
+            border-radius: 8px;
+            border-left: 3px solid #4f46e5;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .market-data {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .market-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+        }
+
+        .market-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .market-item .label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(79, 70, 229, 0.5);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <header class="header">
+        <div class="logo">🚀 KiteConnect Pro</div>
+        <div class="connection-status">
+            <div class="status-dot"></div>
+            <span id="connectionStatus">Connected to Kite API</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Portfolio Overview -->
+        <div class="card portfolio-grid">
+            <h2 class="card-title">
+                📊 Portfolio Overview
+            </h2>
+            <div id="portfolioData">
+                <div class="portfolio-item">
+                    <div class="symbol">RELIANCE</div>
+                    <div class="price">₹2,458.50</div>
+                    <div class="change positive">
+                        ↗ +24.30 (+1.00%)
+                    </div>
+                </div>
+                <div class="portfolio-item">
+                    <div class="symbol">TCS</div>
+                    <div class="price">₹3,124.75</div>
+                    <div class="change negative">
+                        ↘ -15.25 (-0.49%)
+                    </div>
+                </div>
+                <div class="portfolio-item">
+                    <div class="symbol">INFY</div>
+                    <div class="price">₹1,456.20</div>
+                    <div class="change positive">
+                        ↗ +32.10 (+2.25%)
+                    </div>
+                </div>
+                <div class="portfolio-item">
+                    <div class="symbol">HDFC BANK</div>
+                    <div class="price">₹1,589.90</div>
+                    <div class="change positive">
+                        ↗ +12.45 (+0.79%)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trading Panel -->
+        <div class="card">
+            <h2 class="card-title">
+                💹 Place Order
+            </h2>
+            <div id="alerts"></div>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label for="symbol">Symbol</label>
+                    <input type="text" id="symbol" placeholder="e.g., RELIANCE" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="orderType">Order Type</label>
+                    <select id="orderType" required>
+                        <option value="MARKET">Market</option>
+                        <option value="LIMIT">Limit</option>
+                        <option value="SL">Stop Loss</option>
+                        <option value="SL-M">Stop Loss Market</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" placeholder="Enter quantity" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="price">Price (for Limit orders)</label>
+                    <input type="number" id="price" step="0.01" placeholder="Enter price">
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" data-action="BUY">
+                        📈 Buy
+                    </button>
+                    <button type="submit" class="btn btn-danger" data-action="SELL">
+                        📉 Sell
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Market Data -->
+        <div class="card">
+            <h2 class="card-title">
+                🌐 Market Data
+            </h2>
+            <div class="market-data">
+                <div class="market-item">
+                    <div class="value positive">+0.75%</div>
+                    <div class="label">Nifty 50</div>
+                </div>
+                <div class="market-item">
+                    <div class="value positive">+0.82%</div>
+                    <div class="label">Sensex</div>
+                </div>
+                <div class="market-item">
+                    <div class="value negative">-0.23%</div>
+                    <div class="label">Bank Nifty</div>
+                </div>
+                <div class="market-item">
+                    <div class="value positive">+1.15%</div>
+                    <div class="label">IT Index</div>
+                </div>
+            </div>
+            <div class="chart-placeholder">
+                📈 Real-time Chart (Connect to live data feed)
+            </div>
+        </div>
+
+        <!-- Order Book -->
+        <div class="card">
+            <h2 class="card-title">
+                📋 Order Book
+            </h2>
+            <div class="order-book" id="orderBook">
+                <div class="order-item">
+                    <div>
+                        <div class="symbol">RELIANCE</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">Market • Buy • 10 shares</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="positive">Executed</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">₹2,458.50</div>
+                    </div>
+                </div>
+                <div class="order-item">
+                    <div>
+                        <div class="symbol">TCS</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">Limit • Sell • 5 shares</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: #f59e0b;">Pending</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">₹3,150.00</div>
+                    </div>
+                </div>
+                <div class="order-item">
+                    <div>
+                        <div class="symbol">INFY</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">Market • Buy • 15 shares</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="positive">Executed</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">₹1,456.20</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated Kite API connection
+        class KiteConnector {
+            constructor() {
+                this.isConnected = false;
+                this.apiKey = '';
+                this.accessToken = '';
+            }
+
+            // Initialize connection (in real implementation, this would handle OAuth)
+            async connect(apiKey, accessToken) {
+                try {
+                    // Simulate API connection
+                    this.apiKey = apiKey;
+                    this.accessToken = accessToken;
+                    this.isConnected = true;
+                    
+                    this.updateConnectionStatus('Connected to Kite API', true);
+                    this.showAlert('Successfully connected to Kite API!', 'success');
+                    
+                    // Start real-time data simulation
+                    this.startDataFeed();
+                    
+                    return true;
+                } catch (error) {
+                    this.updateConnectionStatus('Connection Failed', false);
+                    this.showAlert('Failed to connect to Kite API: ' + error.message, 'error');
+                    return false;
+                }
+            }
+
+            // Place order
+            async placeOrder(orderData) {
+                if (!this.isConnected) {
+                    throw new Error('Not connected to Kite API');
+                }
+
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    const orderId = 'ORD' + Math.random().toString(36).substr(2, 9);
+                    
+                    // Add to order book
+                    this.addToOrderBook(orderData, orderId);
+                    
+                    this.showAlert(`Order placed successfully! Order ID: ${orderId}`, 'success');
+                    
+                    return { order_id: orderId };
+                } catch (error) {
+                    this.showAlert('Failed to place order: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+
+            // Get portfolio
+            async getPortfolio() {
+                if (!this.isConnected) {
+                    throw new Error('Not connected to Kite API');
+                }
+
+                // Simulate portfolio data
+                return [
+                    { symbol: 'RELIANCE', quantity: 10, price: 2458.50, change: 24.30, changePercent: 1.00 },
+                    { symbol: 'TCS', quantity: 5, price: 3124.75, change: -15.25, changePercent: -0.49 },
+                    { symbol: 'INFY', quantity: 15, price: 1456.20, change: 32.10, changePercent: 2.25 },
+                    { symbol: 'HDFC BANK', quantity: 8, price: 1589.90, change: 12.45, changePercent: 0.79 }
+                ];
+            }
+
+            // Update connection status in UI
+            updateConnectionStatus(message, connected) {
+                const statusEl = document.getElementById('connectionStatus');
+                const dotEl = document.querySelector('.status-dot');
+                
+                statusEl.textContent = message;
+                
+                if (connected) {
+                    dotEl.style.background = '#10b981';
+                    statusEl.parentElement.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                    statusEl.parentElement.style.background = 'rgba(16, 185, 129, 0.1)';
+                } else {
+                    dotEl.style.background = '#ef4444';
+                    statusEl.parentElement.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    statusEl.parentElement.style.background = 'rgba(239, 68, 68, 0.1)';
+                }
+            }
+
+            // Show alert messages
+            showAlert(message, type) {
+                const alertsContainer = document.getElementById('alerts');
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type}`;
+                alert.textContent = message;
+                
+                alertsContainer.appendChild(alert);
+                
+                setTimeout(() => {
+                    alert.remove();
+                }, 5000);
+            }
+
+            // Add order to order book
+            addToOrderBook(orderData, orderId) {
+                const orderBook = document.getElementById('orderBook');
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item';
+                
+                const statusClass = orderData.orderType === 'MARKET' ? 'positive' : 'color: #f59e0b';
+                const statusText = orderData.orderType === 'MARKET' ? 'Executed' : 'Pending';
+                
+                orderItem.innerHTML = `
+                    <div>
+                        <div class="symbol">${orderData.symbol}</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">
+                            ${orderData.orderType} • ${orderData.action} • ${orderData.quantity} shares
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="${statusClass}">${statusText}</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">
+                            ${orderData.price ? '₹' + orderData.price : 'Market Price'}
+                        </div>
+                    </div>
+                `;
+                
+                orderBook.insertBefore(orderItem, orderBook.firstChild);
+            }
+
+            // Start simulated data feed
+            startDataFeed() {
+                setInterval(() => {
+                    this.updatePortfolioData();
+                }, 5000);
+            }
+
+            // Update portfolio with random price movements
+            updatePortfolioData() {
+                const portfolioItems = document.querySelectorAll('.portfolio-item');
+                
+                portfolioItems.forEach(item => {
+                    const priceEl = item.querySelector('.price');
+                    const changeEl = item.querySelector('.change');
+                    
+                    if (priceEl && changeEl) {
+                        const currentPrice = parseFloat(priceEl.textContent.replace('₹', '').replace(',', ''));
+                        const randomChange = (Math.random() - 0.5) * 20;
+                        const newPrice = currentPrice + randomChange;
+                        const changePercent = (randomChange / currentPrice * 100).toFixed(2);
+                        
+                        priceEl.textContent = `₹${newPrice.toFixed(2)}`;
+                        
+                        const isPositive = randomChange >= 0;
+                        changeEl.className = `change ${isPositive ? 'positive' : 'negative'}`;
+                        changeEl.innerHTML = `
+                            ${isPositive ? '↗' : '↘'} ${isPositive ? '+' : ''}${randomChange.toFixed(2)} (${isPositive ? '+' : ''}${changePercent}%)
+                        `;
+                    }
+                });
+            }
+        }
+
+        // Initialize Kite connector
+        const kite = new KiteConnector();
+
+        // Auto-connect (in real implementation, you'd need proper authentication)
+        kite.connect('demo_api_key', 'demo_access_token');
+
+        // Handle order form submission
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const action = e.submitter.dataset.action;
+            const formData = new FormData(e.target);
+            
+            const orderData = {
+                symbol: formData.get('symbol').toUpperCase(),
+                action: action,
+                orderType: formData.get('orderType'),
+                quantity: parseInt(formData.get('quantity')),
+                price: formData.get('price') ? parseFloat(formData.get('price')) : null
+            };
+
+            try {
+                await kite.placeOrder(orderData);
+                e.target.reset();
+            } catch (error) {
+                console.error('Order placement failed:', error);
+            }
+        });
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initialize particles
+        createParticles();
+
+        // Demo data updates
+        setInterval(() => {
+            const marketItems = document.querySelectorAll('.market-item .value');
+            marketItems.forEach(item => {
+                const randomChange = (Math.random() - 0.5) * 2;
+                const isPositive = randomChange >= 0;
+                item.textContent = `${isPositive ? '+' : ''}${randomChange.toFixed(2)}%`;
+                item.className = `value ${isPositive ? 'positive' : 'negative'}`;
+            });
+        }, 10000);
+
+        console.log('🚀 Kite Connect Trading Platform Initialized');
+        console.log('📝 To integrate with real Kite API:');
+        console.log('1. Get API credentials from Kite Connect');
+        console.log('2. Implement OAuth authentication');
+        console.log('3. Replace simulated methods with actual API calls');
+        console.log('4. Add WebSocket for real-time data');
+    </script>
+</body>
+</html>
