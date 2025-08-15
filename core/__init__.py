@@ -3,7 +3,7 @@
 Core trading module containing Kite API wrapper and other trading utilities.
 """
 
-from .kite_wrapper import Kite_Api
+from .kite_connect import Kite_Api
 
 # Optional: You can also expose specific classes/functions for easier access
 __all__ = ['Kite_Api']
