@@ -1,6 +1,6 @@
 from kiteconnect import KiteConnect
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 import pandas as pd
 
 class Kite_Api:
@@ -79,7 +79,7 @@ class Kite_Api:
     def place_market_order(self, tradingsymbol: str, exchange: str, t_type: str, 
                           quantity: int, p_type: str, price: float = 0, 
                           validity: str = "DAY", variety: str = "REGULAR", 
-                          tag: str = None) -> Dict:
+                          tag: Optional[str] = None) -> Dict:
         """
         Place a market order.
         
@@ -119,7 +119,7 @@ class Kite_Api:
     def place_limit_order(self, tradingsymbol: str, exchange: str, t_type: str, 
                          quantity: int, p_type: str, price: float, 
                          validity: str = "DAY", variety: str = "REGULAR", 
-                         tag: str = None) -> Dict:
+                         tag: Optional[str] = None) -> Dict:
         """
         Place a limit order.
         
@@ -159,7 +159,7 @@ class Kite_Api:
     def place_stoploss_limit_order(self, tradingsymbol: str, exchange: str, t_type: str, 
                                   quantity: int, p_type: str, price: float, 
                                   trigger_price: float, validity: str = "DAY", 
-                                  variety: str = "REGULAR", tag: str = None) -> Dict:
+                                  variety: str = "REGULAR", tag: Optional[str] = None) -> Dict:
         """
         Place a stop-loss limit order.
         
@@ -201,7 +201,7 @@ class Kite_Api:
     def place_stoploss_market_order(self, tradingsymbol: str, exchange: str, t_type: str, 
                                    quantity: int, p_type: str, trigger_price: float, 
                                    validity: str = "DAY", variety: str = "REGULAR", 
-                                   tag: str = None) -> Dict:
+                                   tag: Optional[str] = None) -> Dict:
         """
         Place a stop-loss market order.
         
@@ -240,9 +240,9 @@ class Kite_Api:
     
     # ==================== ORDER MANAGEMENT METHODS ====================
     
-    def modify_order(self, order_id: str, quantity: int = None, price: float = None, 
-                    order_type: str = None, trigger_price: float = None, 
-                    validity: str = None, parent_order_id: str = None) -> Dict:
+    def modify_order(self, order_id: str, quantity: Optional[int] = None, price: Optional[float] = None, 
+                    order_type: Optional[str] = None, trigger_price: Optional[float] = None, 
+                    validity: Optional[str] = None, parent_order_id: Optional[str] = None) -> Dict:
         """
         Modify an existing order.
         
@@ -259,7 +259,7 @@ class Kite_Api:
             Dict: Modification response from Kite API
         """
         try:
-            params = {"order_id": order_id}
+            params: dict[str, Any] = {"order_id": order_id}
             if quantity is not None:
                 params["quantity"] = quantity
             if price is not None:
@@ -307,11 +307,11 @@ class Kite_Api:
     
     # ==================== DATA RETRIEVAL METHODS ====================
     
-    def get_orders(self) -> List[Dict]:
+    def get_orders(self) -> List[Dict[str, Any]]:
         """Get all orders for the day."""
         try:
             orders = self.kite.orders()
-            return orders
+            return orders # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching orders: {e}")
             return []
@@ -320,7 +320,7 @@ class Kite_Api:
         """Get order history for a specific order."""
         try:
             history = self.kite.order_history(order_id)
-            return history
+            return history # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching order history: {e}")
             return []
@@ -329,7 +329,7 @@ class Kite_Api:
         """Get current positions."""
         try:
             positions = self.kite.positions()
-            return positions
+            return positions # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching positions: {e}")
             return {"net": [], "day": []}
@@ -338,12 +338,12 @@ class Kite_Api:
         """Get current holdings."""
         try:
             holdings = self.kite.holdings()
-            return holdings
+            return holdings # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching holdings: {e}")
             return []
     
-    def get_margins(self, segment: str = None) -> Union[Dict, List[Dict]]:
+    def get_margins(self, segment: Optional[str] = None) -> Union[Dict, List[Dict]]:
         """
         Get margin details.
         
@@ -358,7 +358,7 @@ class Kite_Api:
                 margins = self.kite.margins(segment)
             else:
                 margins = self.kite.margins()
-            return margins
+            return margins # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching margins: {e}")
             return {} if segment else []
@@ -367,7 +367,7 @@ class Kite_Api:
         """Get user profile."""
         try:
             profile = self.kite.profile()
-            return profile
+            return profile # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching profile: {e}")
             return {}
@@ -407,7 +407,7 @@ class Kite_Api:
             if isinstance(instruments, str):
                 instruments = [instruments]
             ltp = self.kite.ltp(instruments)
-            return ltp
+            return ltp # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching LTP: {e}")
             return {}
@@ -426,7 +426,7 @@ class Kite_Api:
             if isinstance(instruments, str):
                 instruments = [instruments]
             ohlc = self.kite.ohlc(instruments)
-            return ohlc
+            return ohlc # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching OHLC: {e}")
             return {}
@@ -461,7 +461,7 @@ class Kite_Api:
             self.logger.error(f"Error fetching historical data: {e}")
             return []
     
-    def get_instruments(self, exchange: str = None) -> List[Dict]:
+    def get_instruments(self, exchange: Optional[str] = None) -> List[Dict]:
         """
         Get instrument list.
         
@@ -510,7 +510,7 @@ class Kite_Api:
                 new_product=self.p_type_dict[new_p_type]
             )
             self.logger.info(f"Position converted: {response}")
-            return response
+            return response # type: ignore
         except Exception as e:
             self.logger.error(f"Error converting position: {e}")
             return {"status": "error", "message": str(e)}
@@ -527,7 +527,7 @@ class Kite_Api:
         """
         try:
             margins = self.kite.order_margins(orders)
-            return margins
+            return margins # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching order margins: {e}")
             return {}
@@ -545,7 +545,7 @@ class Kite_Api:
         """
         try:
             margins = self.kite.basket_order_margins(orders, consider_positions)
-            return margins
+            return margins # type: ignore
         except Exception as e:
             self.logger.error(f"Error fetching basket margins: {e}")
             return {}
@@ -580,7 +580,7 @@ class Kite_Api:
             self.logger.error(f"Error calculating P&L summary: {e}")
             return {}
     
-    def search_instruments(self, search_term: str, exchange: str = None) -> List[Dict]:
+    def search_instruments(self, search_term: str, exchange: Optional[str] = None) -> List[Dict]:
         """
         Search for instruments by trading symbol or name.
         
