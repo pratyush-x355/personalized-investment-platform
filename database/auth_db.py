@@ -1,10 +1,12 @@
 import sqlite3
-
+import os
 # Credentials database path
 CREDENTIALS_DB = 'data/credentials.db'
 
 # Database setup
 def init_db():
+    # Create directory if it doesn't exist
+    os.makedirs(os.path.dirname(CREDENTIALS_DB), exist_ok=True)
     conn = sqlite3.connect(CREDENTIALS_DB)
     cursor = conn.cursor()
     # Create table for storing API credentials
